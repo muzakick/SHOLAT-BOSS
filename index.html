@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Checklist">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Checklist Harian</title>
+<style>
+  :root{
+    --bg:#f4f7f6; --surface:#ffffff; --text:#10231f; --muted:#6a7b76; --line:#e3ebe8;
+    --brand:#0f766e; --brand-2:#14b8a6; --brand-soft:#e1f5f2;
+    --ok:#16a34a; --warn:#f59e0b; --gold:#eab308;
+    --shadow:0 1px 2px rgba(16,35,31,.05),0 8px 24px rgba(16,35,31,.06);
+    --r:20px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0b1412; --surface:#121f1c; --text:#e8f3f0; --muted:#8aa099; --line:#1f302c;
+      --brand:#2dd4bf; --brand-2:#5eead4; --brand-soft:#0f2f2a;
+      --ok:#4ade80; --warn:#fbbf24; --gold:#facc15; --shadow:none;
+    }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding-bottom:env(safe-area-inset-bottom)}
+  button{font:inherit;color:inherit;cursor:pointer;border:none;background:none;padding:0}
+  .wrap{max-width:520px;margin:0 auto;padding:22px 16px 56px}
+
+  /* header */
+  .head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+  .head .hi{font-size:13px;color:var(--muted);margin:0 0 2px}
+  .head h1{font-size:26px;margin:0;letter-spacing:-.02em;line-height:1.15}
+  .head .date{font-size:13px;color:var(--muted);margin-top:4px}
+  .today-btn{padding:8px 14px;border-radius:99px;background:var(--brand-soft);color:var(--brand);font-weight:600;font-size:13px}
+  .today-btn[hidden]{display:none}
+
+  /* minggu */
+  .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:18px}
+  .day{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0 9px;border-radius:16px;background:var(--surface);
+       border:1.5px solid transparent;box-shadow:var(--shadow)}
+  .day span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .day b{font-size:16px;font-weight:700}
+  .day i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+  .day.some i{background:var(--warn)} .day.full i{background:var(--ok)}
+  .day.sel{border-color:var(--brand);background:var(--brand-soft)}
+  .day.sel span{color:var(--brand)}
+
+  /* hero progres */
+  .hero{display:flex;align-items:center;gap:18px;padding:18px;border-radius:var(--r);margin-bottom:16px;color:#fff;
+        background:linear-gradient(135deg,#0f766e,#14b8a6 120%);box-shadow:0 10px 30px rgba(15,118,110,.28)}
+  .ring{position:relative;flex:none;width:92px;height:92px}
+  .ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring circle{fill:none;stroke-width:9;stroke-linecap:round}
+  .ring .bg{stroke:rgba(255,255,255,.25)}
+  .ring .fg{stroke:#fff;stroke-dasharray:264;stroke-dashoffset:264;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1)}
+  .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-size:22px;font-weight:800;letter-spacing:-.02em}
+  .hero h2{font-size:17px;margin:0 0 3px}
+  .hero p{margin:0;font-size:13px;opacity:.9}
+
+  /* kartu daftar */
+  .card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+  .card .ttl{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 6px}
+  .card .ttl h3{margin:0;font-size:15px}
+  .card .ttl span{font-size:12px;font-weight:700;color:var(--brand);background:var(--brand-soft);padding:3px 10px;border-radius:99px}
+  .item{display:flex;align-items:center;gap:14px;width:100%;padding:14px 18px;text-align:left;transition:background .15s}
+  .item + .item{border-top:1px solid var(--line)}
+  .item:active{background:var(--bg)}
+  .ico{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--brand-soft);font-size:20px}
+  .item .t{flex:1;min-width:0}
+  .item .t b{display:block;font-weight:600;line-height:1.25}
+  .item .t small{color:var(--muted);font-size:12px}
+  .chk{flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;transition:all .2s}
+  .chk svg{width:16px;height:16px;stroke:#fff;stroke-width:3.2;fill:none;stroke-linecap:round;stroke-linejoin:round;
+           stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .25s .05s}
+  .item.on .chk{background:var(--ok);border-color:var(--ok);transform:scale(1.04)}
+  .item.on .chk svg{stroke-dashoffset:0}
+  .item.on .t b{color:var(--muted)}
+  .note{margin:0;padding:12px 18px 16px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+
+  /* statistik */
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .stat{background:var(--surface);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow)}
+  .stat small{display:block;color:var(--muted);font-size:12px;line-height:1.3;min-height:31px}
+  .stat b{font-size:28px;letter-spacing:-.02em;line-height:1.2}
+  .stat em{font-style:normal;font-size:13px;color:var(--muted);margin-left:3px}
+  .stat.wide{grid-column:1/-1}
+  .mini{display:flex;gap:4px;margin-top:10px}
+  .mini div{flex:1;height:34px;border-radius:8px;background:var(--line);position:relative;overflow:hidden}
+  .mini div i{position:absolute;left:0;right:0;bottom:0;background:var(--brand-2);border-radius:8px 8px 0 0}
+
+  .tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+  .tools button{padding:9px 14px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow);font-size:13px;font-weight:500}
+  .hint{color:var(--muted);font-size:12px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div>
+      <p class="hi" id="hi">Assalamualaikum</p>
+      <h1 id="title">Hari ini</h1>
+      <div class="date" id="sub"></div>
+    </div>
+    <button class="today-btn" id="btnToday" hidden>Ke hari ini</button>
+  </div>
+
+  <div class="week" id="week"></div>
+
+  <div class="hero">
+    <div class="ring">
+      <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="ringFg" cx="50" cy="50" r="42"/></svg>
+      <div class="num" id="ringNum">0/6</div>
+    </div>
+    <div>
+      <h2 id="heroT">Mulai dari yang kecil</h2>
+      <p id="heroP">Centang satu per satu, pelan-pelan saja.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ttl"><h3>Sholat 5 waktu</h3><span id="gSholat">0/5</span></div>
+    <div id="sholat"></div>
+  </div>
+
+  <div class="card">
+    <div class="ttl"><h3>Menjaga diri</h3></div>
+    <div id="jaga"></div>
+    <p class="note">Kalau terpeleset: istighfar, taubat, lalu lanjut lagi. Jangan sampai bolong dua kali berturut-turut.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><small>Sholat lengkap beruntun</small><b id="stS">0</b><em>hari</em></div>
+    <div class="stat"><small>Menjaga diri beruntun</small><b id="stJ">0</b><em>hari</em></div>
+    <div class="stat wide"><small>Sholat 7 hari terakhir</small><b id="stW">0</b><em>dari 35</em>
+      <div class="mini" id="mini"></div></div>
+  </div>
+
+  <div class="tools">
+    <button id="btnBackup">Backup</button>
+    <button id="btnRestore">Restore</button>
+    <input type="file" id="fileRestore" accept="application/json" hidden>
+  </div>
+  <div class="hint">Data tersimpan di perangkat ini saja. Sesekali backup ya.</div>
+</div>
+
+<script>
+const KEY = 'checklist_v1';
+const SHOLAT = [
+  ['subuh','Subuh','Sebelum matahari terbit','🌅'],
+  ['dzuhur','Dzuhur','Tengah hari','☀️'],
+  ['ashar','Ashar','Sore hari','🌤️'],
+  ['maghrib','Maghrib','Saat matahari terbenam','🌇'],
+  ['isya','Isya','Malam hari','🌙']
+];
+const JAGA = [['jaga','Menjaga diri dari maksiat','Centang sebelum tidur','🛡️']];
+const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const HARI_S = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,'0');
+const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const addDays = (s,n) => { const d = parse(s); d.setDate(d.getDate()+n); return fmt(d); };
+const today = () => fmt(new Date());
+
+function load(){ try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; } }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){ alert('Gagal menyimpan. Coba Backup dulu.'); } }
+
+let data = load();
+let cur = today();
+
+const done = (date, id) => !!(data[date] && data[date][id]);
+const sholatCount = date => SHOLAT.filter(([id]) => done(date, id)).length;
+const sholatFull = date => sholatCount(date) === SHOLAT.length;
+const jagaOk = date => done(date, 'jaga');
+
+function streak(pred){
+  let d = today();
+  if (!pred(d)) d = addDays(d, -1);
+  let n = 0;
+  while (pred(d) && n < 3650){ n++; d = addDays(d, -1); }
+  return n;
+}
+
+const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const itemHtml = ([id,label,sub,ico]) =>
+  `<button class="item ${done(cur,id) ? 'on' : ''}" data-id="${id}">
+     <span class="ico">${ico}</span>
+     <span class="t"><b>${label}</b><small>${sub}</small></span>
+     <span class="chk">${CHECK}</span>
+   </button>`;
+
+function sapaan(){
+  const h = new Date().getHours();
+  return h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
+}
+
+function render(){
+  const isToday = cur === today();
+  const d = parse(cur);
+  $('hi').textContent = isToday ? sapaan() : 'Melihat catatan';
+  $('title').textContent = isToday ? 'Hari ini' : HARI[d.getDay()];
+  $('sub').textContent = `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
+  $('btnToday').hidden = isToday;
+
+  let w = '';
+  for (let i = 6; i >= 0; i--){
+    const ds = addDays(today(), -i), dd = parse(ds);
+    const s = sholatCount(ds), j = jagaOk(ds);
+    const cls = (s === 5 && j) ? 'full' : (s > 0 || j) ? 'some' : '';
+    w += `<button class="day ${cls} ${ds === cur ? 'sel' : ''}" data-date="${ds}"><span>${HARI_S[dd.getDay()]}</span><b>${dd.getDate()}</b><i></i></button>`;
+  }
+  $('week').innerHTML = w;
+
+  $('sholat').innerHTML = SHOLAT.map(itemHtml).join('');
+  $('jaga').innerHTML = JAGA.map(itemHtml).join('');
+
+  const s = sholatCount(cur), j = jagaOk(cur) ? 1 : 0, total = s + j;
+  $('gSholat').textContent = `${s}/5`;
+  $('ringNum').textContent = `${total}/6`;
+  $('ringFg').style.strokeDashoffset = 264 - 264 * (total / 6);
+  const msg = total === 6 ? ['Alhamdulillah, lengkap', 'Semoga istiqomah, besok lanjut lagi.']
+    : total >= 4 ? ['Sedikit lagi', 'Tinggal beberapa yang tersisa.']
+    : total >= 1 ? ['Bagus, lanjutkan', 'Satu demi satu, yang penting konsisten.']
+    : ['Mulai dari yang kecil', 'Centang satu per satu, pelan-pelan saja.'];
+  $('heroT').textContent = msg[0]; $('heroP').textContent = msg[1];
+
+  $('stS').textContent = streak(sholatFull);
+  $('stJ').textContent = streak(jagaOk);
+  let wk = 0, mini = '';
+  for (let i = 6; i >= 0; i--){
+    const c = sholatCount(addDays(today(), -i)); wk += c;
+    mini += `<div title="${c}/5"><i style="height:${c/5*100}%"></i></div>`;
+  }
+  $('stW').textContent = wk;
+  $('mini').innerHTML = mini;
+}
+
+document.addEventListener('click', e => {
+  const it = e.target.closest('.item');
+  if (it){
+    const id = it.dataset.id;
+    data[cur] = data[cur] || {};
+    data[cur][id] = !data[cur][id];
+    save(); render();
+    if (navigator.vibrate) try { navigator.vibrate(12); } catch(_){}
+    return;
+  }
+  const dy = e.target.closest('.day');
+  if (dy){ cur = dy.dataset.date; render(); }
+});
+$('btnToday').onclick = () => { cur = today(); render(); };
+
+function download(name, content, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type}));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$('btnBackup').onclick = () => download('checklist-backup-' + today() + '.json', JSON.stringify(data, null, 2), 'application/json');
+$('btnRestore').onclick = () => $('fileRestore').click();
+$('fileRestore').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const incoming = JSON.parse(await f.text());
+    if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) throw 0;
+    if (!confirm('Gabungkan data dari file ini ke data sekarang?')) return;
+    for (const [date, v] of Object.entries(incoming)){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || typeof v !== 'object' || !v) continue;
+      data[date] = Object.assign({}, data[date] || {}, v);
+    }
+    save(); render();
+  } catch(err){ alert('File tidak valid.'); }
+  e.target.value = '';
+});
+
+// kalau aplikasi dibuka lewat tengah malam, perbarui "hari ini"
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { if (cur > today()) cur = today(); render(); } });
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+render();
+</script>
+</body>
+</html>
