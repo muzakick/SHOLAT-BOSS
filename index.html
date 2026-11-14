@@ -142,13 +142,14 @@
 
   /* dock bawah */
   .dockwrap{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:center;gap:10px;z-index:5;pointer-events:none;padding:0 14px}
-  .dock{pointer-events:auto;display:flex;gap:4px;padding:6px;border-radius:999px;background:var(--surface);
+  .dock{pointer-events:auto;display:flex;gap:2px;max-width:calc(100% - 68px);padding:6px;border-radius:999px;background:var(--surface);
         background:color-mix(in srgb,var(--surface) 84%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
         box-shadow:0 12px 32px rgba(16,35,31,.18),0 0 0 1px var(--line)}
-  .dock button{position:relative;display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border-radius:999px;color:var(--muted);font-weight:700;font-size:14px;transition:background .25s,color .25s,padding .25s}
+  .dock button{position:relative;display:flex;align-items:center;gap:6px;height:46px;padding:0 11px;border-radius:999px;color:var(--muted);font-weight:700;font-size:14px;transition:background .25s,color .25s,padding .25s}
   .dock button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .dock button.on .lb{max-width:96px}
   .dock .lb{max-width:0;overflow:hidden;white-space:nowrap;opacity:0;transition:max-width .28s,opacity .2s}
-  .dock button.on{background:var(--brand);color:var(--on-brand);padding:0 18px 0 15px}
+  .dock button.on{background:var(--brand);color:var(--on-brand);padding:0 15px 0 12px}
   .dock button.on .lb{max-width:84px;opacity:1}
   .fabq{pointer-events:auto;width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;box-shadow:0 12px 28px rgba(15,118,110,.42);transition:transform .15s}
   .fabq:active{transform:scale(.93)}
@@ -176,6 +177,28 @@
   .mic.rec{background:var(--bad);color:#fff}
   .chipS{margin-top:12px;padding:9px 14px;border-radius:99px;background:var(--bg);font-weight:600;font-size:13px;color:var(--muted)}
   .chipS.on{background:var(--warn-bg);color:var(--warn)}
+
+  /* ringkasan */
+  .wknav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+  .wknav button{width:40px;height:40px;border-radius:50%;background:var(--surface);box-shadow:var(--shadow);font-size:20px;line-height:1}
+  .wknav button:disabled{opacity:.35}
+  .wknav div{flex:1;text-align:center;font-weight:700;font-size:15px}
+  .chart{display:flex;gap:8px;height:150px;padding:6px 16px 14px}
+  .chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+  .chart .v{font-size:10px;color:var(--muted);height:12px;line-height:12px;font-weight:700}
+  .chart .track{flex:1;width:100%;display:flex;align-items:flex-end;background:var(--bg);border-radius:9px;overflow:hidden}
+  .chart .b{width:100%;background:linear-gradient(0deg,var(--brand),var(--brand-2));border-radius:7px 7px 0 0;min-height:3px}
+  .chart .b.full{background:var(--ok)} .chart .col.fut .b{background:transparent}
+  .chart .l{font-size:11px;color:var(--muted)} .chart .col.now .l{color:var(--brand);font-weight:800}
+  .pr{display:grid;grid-template-columns:68px 1fr 38px;gap:10px;align-items:center;padding:7px 16px}
+  .pr .bar{grid-column:auto}.pr b{font-size:14px}.pr small{color:var(--muted);font-size:12px;text-align:right}
+  .tg{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid var(--line);font-size:14px}
+  .tg:first-child{border-top:none}
+  .tg .d{font-weight:800;white-space:nowrap}.tg .d.up{color:var(--ok)}.tg .d.z{color:var(--muted);font-weight:600}
+  .tg small{display:block;color:var(--muted);font-size:12px}
+  .nt{padding:10px 16px;border-top:1px solid var(--line);font-size:14px;line-height:1.45}
+  .nt:first-child{border-top:none}
+  .none{padding:14px 16px;color:var(--muted);font-size:13px}
 
   /* dialog */
   dialog{border:none;border-radius:24px 24px 0 0;padding:0;width:100%;max-width:520px;margin:auto auto 0;background:var(--surface);color:var(--text);max-height:92vh}
@@ -299,6 +322,21 @@
     </div>
   </div>
 
+  <!-- ========== RINGKASAN ========== -->
+  <div id="viewRingkas" hidden>
+    <div class="wknav"><button id="wkPrev" aria-label="Minggu sebelumnya">‹</button><div id="wkLbl"></div><button id="wkNext" aria-label="Minggu berikutnya">›</button></div>
+    <div class="hero">
+      <div class="ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="42"/><circle class="fg" id="rkFg" cx="50" cy="50" r="42"/></svg><div class="num" id="rkNum">0%</div></div>
+      <div><h2 id="rkHeroT">Skor rata-rata</h2><p id="rkHeroP"></p></div>
+    </div>
+    <div class="sum3" id="rkTiles"></div>
+    <div class="card"><div class="ttl"><h3>Skor per hari</h3></div><div class="chart" id="rkChart"></div></div>
+    <div class="card"><div class="ttl"><h3>Sholat per waktu</h3><span id="rkShN"></span></div><div id="rkPray" style="padding-bottom:8px"></div></div>
+    <div class="card"><div class="ttl"><h3>Kemajuan target</h3></div><div id="rkTargets"></div></div>
+    <div class="card"><div class="ttl"><h3>Catatan</h3></div><div id="rkNotes"></div></div>
+    <div style="text-align:center"><button class="sb" id="rkCopy">Salin ringkasan</button></div>
+  </div>
+
 </div>
 
 <div class="dockwrap">
@@ -306,6 +344,7 @@
     <button data-tab="harian"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/></svg><span class="lb">Harian</span></button>
     <button data-tab="tugas"><svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10"/><path d="M4 6l1.2 1.2L7.5 5M4 12l1.2 1.2L7.5 11M4 18l1.2 1.2L7.5 17"/></svg><span class="lb">Tugas</span><span class="bdg" id="bdgTugas" hidden></span></button>
     <button data-tab="target"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg><span class="lb">Target</span></button>
+    <button data-tab="ringkas"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg><span class="lb">Rekap</span></button>
   </nav>
   <button class="fabq" id="fabQ" aria-label="Catat cepat"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
 </div>
@@ -407,7 +446,7 @@ let tg=lsGet(KT,{groups:[],items:[]});
 if(!tg||!Array.isArray(tg.groups)||!Array.isArray(tg.items)) tg={groups:[],items:[]};
 let st=Object.assign({hijriShift:0,jumat:true,view:'ringkas',tab:'harian'},lsGet(KS,{}));
 let todos=lsGet(KD,[]); if(!Array.isArray(todos)) todos=[];
-if(!['harian','tugas','target'].includes(st.tab)) st.tab='harian';
+if(!['harian','tugas','target','ringkas'].includes(st.tab)) st.tab='harian';
 const saveDays=()=>lsSet(KEY,data), saveTg=()=>lsSet(KT,tg), saveSt=()=>lsSet(KS,st), saveTodos=()=>lsSet(KD,todos);
 
 const $=id=>document.getElementById(id);
@@ -643,6 +682,100 @@ $('qMic').onclick=()=>{
   }catch(err){rec=null}
 };
 
+
+/* ================= ringkasan ================= */
+const KN='checklist_snap_v1';
+let snap=lsGet(KN,{}); if(!snap||typeof snap!=='object'||Array.isArray(snap)) snap={};
+let wkOff=0, rkText='';
+const mondayOf=ds=>{const d=parse(ds);d.setDate(d.getDate()-((d.getDay()+6)%7));return fmt(d)};
+function ensureSnap(){
+  const ws=mondayOf(today());
+  if(snap[ws]) return;
+  autoCache={}; const o={}; tg.items.forEach(it=>o[it.id]=Math.round(progress(it)*100));
+  snap[ws]=o;
+  Object.keys(snap).sort().slice(0,-16).forEach(k=>delete snap[k]);
+  lsSet(KN,snap);
+}
+function renderRingkas(){
+  autoCache={};
+  const t0=today(), ws=addDays(mondayOf(t0),wkOff*7);
+  const days=[0,1,2,3,4,5,6].map(i=>addDays(ws,i)), el=days.filter(d=>d<=t0), n=el.length;
+  const d1=parse(days[0]), d7=parse(days[6]);
+  $('hi').textContent='Ringkasan'; $('btnToday').hidden=true;
+  $('title').textContent=wkOff===0?'Minggu ini':wkOff===-1?'Minggu lalu':`${-wkOff} minggu lalu`;
+  const rng=`${d1.getDate()} ${BULAN_S[d1.getMonth()]} – ${d7.getDate()} ${BULAN_S[d7.getMonth()]} ${d7.getFullYear()}`;
+  $('sub').textContent=rng; $('wkLbl').textContent=rng;
+  $('wkNext').disabled=wkOff>=0; $('wkPrev').disabled=wkOff<=-52;
+
+  const pp={}; SHOLAT_IDS.forEach(id=>pp[id]=0);
+  let jg=0,full=0,sc=0,bonus=0; const scores={};
+  days.forEach(ds=>{
+    if(ds>t0){scores[ds]=null;return}
+    SHOLAT_IDS.forEach(id=>{if(done(ds,id)) pp[id]++});
+    const c=counted(ds); scores[ds]=c.total?c.done/c.total:0; sc+=scores[ds];
+    if(jagaOk(ds)) jg++; if(sholatFull(ds)) full++;
+    bonus+=daySpecials(ds).sun.filter(x=>done(ds,x[0])).length;
+  });
+  const sh=SHOLAT_IDS.reduce((a,id)=>a+pp[id],0), avg=n?Math.round(sc/n*100):0;
+  const a0=parse(ws).getTime(), a1=parse(addDays(ws,7)).getTime();
+  const inW=ts=>ts>=a0&&ts<a1;
+  const tDone=todos.filter(t=>t.done&&inW(t.doneAt||0)).length, tNew=todos.filter(t=>inW(t.created||0)).length;
+
+  $('rkNum').textContent=avg+'%';
+  $('rkFg').style.strokeDashoffset=264-264*(avg/100);
+  $('rkHeroT').textContent=!n?'Belum dimulai':avg>=85?'Luar biasa':avg>=60?'Sudah bagus':avg>=30?'Terus naikkan':'Pelan-pelan saja';
+  $('rkHeroP').textContent=n?`Rata-rata ${n} hari berjalan, ${full} hari sholat lengkap.`:'Minggu ini belum berjalan.';
+
+  $('rkTiles').innerHTML=
+    `<div><small>Sholat</small><b>${sh}</b><span class="hint2">/${5*n}</span></div>`+
+    `<div><small>Menjaga diri</small><b>${jg}</b><span class="hint2">/${n} hari</span></div>`+
+    `<div><small>Tugas selesai</small><b>${tDone}</b><span class="hint2">${tNew?'dari '+tNew+' baru':''}</span></div>`;
+
+  $('rkChart').innerHTML=days.map(ds=>{
+    const v=scores[ds], fut=v===null, h=fut?0:Math.round(v*100);
+    return `<div class="col ${fut?'fut':''} ${ds===t0?'now':''}"><span class="v">${fut?'':h+'%'}</span><div class="track"><div class="b ${h===100?'full':''}" style="height:${h}%"></div></div><span class="l">${HARI_S[parse(ds).getDay()]}</span></div>`;
+  }).join('');
+
+  $('rkShN').textContent=full+' hari lengkap';
+  $('rkPray').innerHTML=SHOLAT.map(([id,lab])=>{
+    const c=pp[id], pc=n?c/n*100:0;
+    return `<div class="pr"><b>${lab}</b><div class="bar"><i style="width:${pc}%"></i></div><small>${c}/${n}</small></div>`;
+  }).join('');
+
+  const nextWs=addDays(ws,7), base=snap[ws], endSnap=wkOff===0?null:snap[nextWs];
+  const rows=tg.items.map(it=>{
+    const now=Math.round(progress(it)*100);
+    const from=base?(base[it.id]??0):null, to=wkOff===0?now:(endSnap?(endSnap[it.id]??0):null);
+    return (from==null||to==null)?null:{name:it.name,from,to,d:to-from};
+  }).filter(Boolean).sort((a,b)=>b.d-a.d);
+  $('rkTargets').innerHTML=!tg.items.length?'<div class="none">Belum ada target. Tambah di tab Target.</div>'
+    :!rows.length?'<div class="none">Data minggu ini belum tercatat. Pantauan target mulai dari saat aplikasi pertama dibuka di minggu tersebut.</div>'
+    :rows.map(r=>`<div class="tg"><div>${esc(r.name)}<small>${r.from}% → ${r.to}%</small></div><span class="d ${r.d>0?'up':'z'}">${r.d>0?'+'+r.d+'%':r.d<0?r.d+'%':'tetap'}</span></div>`).join('');
+
+  const notes=[]; const lines=[];
+  if(n){
+    const worst=SHOLAT.map(([id,lab])=>({lab,miss:n-pp[id]})).sort((a,b)=>b.miss-a.miss)[0];
+    if(worst.miss>0){notes.push(`🕌 Sholat yang paling sering terlewat: <b>${worst.lab}</b> (${worst.miss}x). Fokus ke satu ini dulu minggu depan.`);lines.push(`Paling sering terlewat: ${worst.lab} (${worst.miss}x)`)}
+    else {notes.push('🕌 Semua sholat lengkap di hari yang berjalan. Alhamdulillah.');lines.push('Semua sholat lengkap')}
+    const best=el.slice().sort((a,b)=>scores[b]-scores[a])[0];
+    if(scores[best]>0) notes.push(`⭐ Hari terbaik: <b>${HARI[parse(best).getDay()]}</b> (${Math.round(scores[best]*100)}%).`);
+    if(jg<n) notes.push(`🛡️ Menjaga diri tercatat ${jg} dari ${n} hari. Ingat: jangan bolong dua kali berturut-turut.`);
+    else notes.push('🛡️ Menjaga diri penuh minggu ini. Teruskan.');
+    if(bonus) notes.push(`🌿 Amalan sunnah tercatat: ${bonus}x.`);
+    if(wkOff===0){const pend=todos.filter(t=>!t.done).length; if(pend) notes.push(`📝 Masih ada ${pend} tugas belum selesai.`)}
+  }
+  $('rkNotes').innerHTML=notes.length?notes.map(x=>`<div class="nt">${x}</div>`).join(''):'<div class="none">Belum ada data.</div>';
+
+  rkText=[`Ringkasan ${rng}`,`Skor rata-rata: ${avg}%`,`Sholat: ${sh}/${5*n} | Menjaga diri: ${jg}/${n} hari`,`Tugas selesai: ${tDone}`,...lines,
+    ...rows.filter(r=>r.d!==0).slice(0,5).map(r=>`Target ${r.name}: ${r.from}% → ${r.to}%`)].join('\n');
+}
+$('wkPrev').onclick=()=>{if(wkOff>-52){wkOff--;render()}};
+$('wkNext').onclick=()=>{if(wkOff<0){wkOff++;render()}};
+$('rkCopy').onclick=async()=>{
+  try{await navigator.clipboard.writeText(rkText);$('rkCopy').textContent='Tersalin ✓'}
+  catch(e){prompt('Salin teks ini:',rkText)}
+  setTimeout(()=>{$('rkCopy').textContent='Salin ringkasan'},1800);
+};
 
 /* ================= target ================= */
 const HIRA='あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split('');
@@ -890,17 +1023,18 @@ document.addEventListener('click',e=>{
 });
 $('btnAdd').onclick=()=>openForm();
 $('btnToday').onclick=()=>{cur=today();render()};
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(cur>today())cur=today();render()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(cur>today())cur=today();ensureSnap();render()}});
 
 function render(){
-  $('viewHarian').hidden=st.tab!=='harian'; $('viewTugas').hidden=st.tab!=='tugas'; $('viewTarget').hidden=st.tab!=='target';
+  $('viewHarian').hidden=st.tab!=='harian'; $('viewTugas').hidden=st.tab!=='tugas'; $('viewTarget').hidden=st.tab!=='target'; $('viewRingkas').hidden=st.tab!=='ringkas';
   document.querySelectorAll('.dock [data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===st.tab));
   const pc=todos.filter(t=>!t.done).length, bd=$('bdgTugas');
   bd.hidden=!pc||st.tab==='tugas'; bd.textContent=pc>99?'99+':String(pc);
-  if(st.tab==='harian') renderHarian(); else if(st.tab==='tugas') renderTugas(); else renderTarget();
+  if(st.tab==='harian') renderHarian(); else if(st.tab==='tugas') renderTugas(); else if(st.tab==='ringkas') renderRingkas(); else renderTarget();
 }
 
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+ensureSnap();
 render();
 </script>
 </body>
