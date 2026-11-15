@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f766e">
+<script>try{var _s=JSON.parse(localStorage.getItem('checklist_settings_v1'))||{};if(_s.mode)document.documentElement.dataset.mode=_s.mode}catch(e){}</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Checklist">
@@ -21,11 +22,16 @@
     --r:20px;
   }
   @media (prefers-color-scheme: dark){
-    :root{
+    :root:not([data-mode="terang"]){
       --bg:#0b1412; --surface:#121f1c; --text:#e8f3f0; --muted:#8aa099; --line:#1f302c;
       --brand:#2dd4bf; --brand-2:#5eead4; --brand-soft:#0f2f2a;
       --ok:#4ade80; --warn:#fbbf24; --warn-bg:#3a2f0e; --bad:#f87171; --gold:#facc15; --shadow:none; --on-brand:#04201c;
     }
+  }
+  :root[data-mode="gelap"]{
+      --bg:#0b1412; --surface:#121f1c; --text:#e8f3f0; --muted:#8aa099; --line:#1f302c;
+      --brand:#2dd4bf; --brand-2:#5eead4; --brand-soft:#0f2f2a;
+      --ok:#4ade80; --warn:#fbbf24; --warn-bg:#3a2f0e; --bad:#f87171; --gold:#facc15; --shadow:none; --on-brand:#04201c;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html{-webkit-text-size-adjust:100%}
@@ -425,6 +431,8 @@
     <option value="1">Maju 1 hari</option>
   </select>
   <div class="small">Dipakai untuk hari besar dan puasa sunnah. Sesuaikan kalau berbeda dengan penetapan pemerintah.</div>
+  <label class="small" for="sMode" style="display:block;margin-top:12px">Mode tampilan</label>
+  <select id="sMode"><option value="otomatis">Otomatis (ikut HP)</option><option value="terang">Terang</option><option value="gelap">Gelap</option></select>
   <label class="chkrow"><input type="checkbox" id="sJumat"> Hari Jumat: ganti Dzuhur dengan Sholat Jumat (laki-laki)</label>
   <div class="tools">
     <button id="btnBackup">Backup JSON</button>
@@ -946,9 +954,10 @@ $('fT').addEventListener('submit',e=>{
 });
 
 /* ----- pengaturan ----- */
-$('btnSet').onclick=()=>{$('sHijri').value=String(st.hijriShift||0);$('sJumat').checked=!!st.jumat;$('dlgS').showModal()};
+$('btnSet').onclick=()=>{$('sHijri').value=String(st.hijriShift||0);$('sJumat').checked=!!st.jumat;$('sMode').value=st.mode||'otomatis';$('dlgS').showModal()};
 $('sClose').onclick=()=>$('dlgS').close();
 $('sHijri').onchange=()=>{st.hijriShift=Number($('sHijri').value);evCache.key='';saveSt();render()};
+$('sMode').onchange=()=>{st.mode=$('sMode').value;if(st.mode==='otomatis')delete document.documentElement.dataset.mode;else document.documentElement.dataset.mode=st.mode;saveSt()};
 $('sJumat').onchange=()=>{st.jumat=$('sJumat').checked;saveSt();render()};
 [$('dlgT'),$('dlgS'),$('dlgQ')].forEach(dlg=>dlg.addEventListener('click',e=>{if(e.target===dlg) dlg.close()}));
 
